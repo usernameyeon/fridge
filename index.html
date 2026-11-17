@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#eef4f8">
+<title>우리집 냉장고</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --bg:#eef4f8; --card:#fff; --ink:#1d2b36; --muted:#6b7c89; --line:#dde7ee;
+    --accent:#3f8fb5; --accent-soft:#e1eff6;
+    --red:#d9483b; --red-soft:#fdecea;
+    --orange:#e9801f; --orange-soft:#fff1e2;
+    --yellow:#b8900f; --yellow-soft:#fbf4d9;
+    --green:#3f9468; --green-soft:#e5f4ec;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:Pretendard,-apple-system,"Noto Sans KR","Malgun Gothic",sans-serif;}
+  body{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+  button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+  input{font:inherit;color:inherit}
+
+  header{position:sticky;top:0;z-index:5;background:var(--bg);padding:18px 18px 8px}
+  .top{display:flex;align-items:center;justify-content:space-between}
+  h1{font-size:22px;margin:0;font-weight:800;letter-spacing:-.4px}
+  .sync{font-size:12px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:5px}
+  .dot{width:7px;height:7px;border-radius:50%;background:#b5c3cd}
+  .dot.ok{background:var(--green)} .dot.busy{background:var(--orange)} .dot.err{background:var(--red)}
+  .icon-btn{width:42px;height:42px;border-radius:14px;background:var(--card);display:grid;place-items:center;
+    box-shadow:0 1px 2px rgba(30,60,80,.08)}
+  .icon-btn svg{width:22px;height:22px;stroke:var(--ink)}
+
+  .summary{display:flex;gap:8px;margin:14px 0 12px}
+  .sum{flex:1;background:var(--card);border-radius:16px;padding:11px 12px;box-shadow:0 1px 2px rgba(30,60,80,.06)}
+  .sum b{display:block;font-size:22px;font-weight:800;line-height:1.1}
+  .sum span{font-size:12px;color:var(--muted)}
+  .sum.red b{color:var(--red)} .sum.orange b{color:var(--orange)}
+
+  .tabs{display:flex;gap:6px;background:#e2ebf1;padding:4px;border-radius:14px}
+  .tab{flex:1;padding:9px 0;border-radius:11px;font-size:14px;font-weight:600;color:var(--muted)}
+  .tab.on{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(30,60,80,.1)}
+
+  main{padding:4px 18px}
+  .group{font-size:13px;font-weight:700;color:var(--muted);margin:18px 4px 8px;display:flex;gap:6px;align-items:center}
+  .group i{font-style:normal;font-weight:600;background:#e2ebf1;border-radius:8px;padding:1px 7px;font-size:12px}
+  .item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);
+    border-radius:18px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 2px rgba(30,60,80,.06)}
+  .item:active{transform:scale(.99)}
+  .emo{width:46px;height:46px;border-radius:14px;background:#f1f6f9;display:grid;place-items:center;font-size:25px;flex:none}
+  .info{flex:1;min-width:0}
+  .name{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sub{font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .right{text-align:right;flex:none}
+  .badge{display:inline-block;font-size:13px;font-weight:800;padding:4px 9px;border-radius:9px}
+  .date{font-size:12px;color:var(--muted);margin-top:4px}
+  .b-red{background:var(--red-soft);color:var(--red)}
+  .b-orange{background:var(--orange-soft);color:var(--orange)}
+  .b-yellow{background:var(--yellow-soft);color:var(--yellow)}
+  .b-green{background:var(--green-soft);color:var(--green)}
+  .item.expired .name{color:var(--red)}
+
+  .empty{text-align:center;color:var(--muted);padding:60px 20px;font-size:15px;line-height:1.6}
+  .empty .big{font-size:46px;margin-bottom:8px}
+
+  .fab{position:fixed;right:20px;bottom:calc(24px + env(safe-area-inset-bottom));z-index:6;
+    height:58px;padding:0 22px 0 18px;border-radius:20px;background:var(--accent);color:#fff;
+    font-size:16px;font-weight:700;display:flex;align-items:center;gap:6px;box-shadow:0 6px 18px rgba(63,143,181,.4)}
+  .fab svg{width:22px;height:22px;stroke:#fff}
+
+  /* bottom sheet */
+  .dim{position:fixed;inset:0;background:rgba(20,35,45,.38);z-index:20;opacity:0;pointer-events:none;transition:opacity .2s}
+  .dim.on{opacity:1;pointer-events:auto}
+  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--card);border-radius:24px 24px 0 0;
+    padding:10px 20px calc(22px + env(safe-area-inset-bottom));max-height:92vh;overflow-y:auto;
+    transform:translateY(105%);transition:transform .25s ease}
+  .sheet.on{transform:none}
+  .grab{width:40px;height:5px;border-radius:3px;background:#d4dee5;margin:0 auto 14px}
+  .sheet h2{font-size:19px;margin:0 0 16px;font-weight:800}
+  label.lb{display:block;font-size:13px;font-weight:700;color:var(--muted);margin:16px 0 7px}
+  .field{width:100%;border:1.5px solid var(--line);border-radius:14px;padding:13px 14px;font-size:16px;background:#fbfdfe;outline:none}
+  .field:focus{border-color:var(--accent);background:#fff}
+  .chips{display:flex;gap:7px;flex-wrap:wrap}
+  .chip{padding:9px 14px;border-radius:12px;background:#f1f6f9;font-size:14px;font-weight:600;border:1.5px solid transparent}
+  .chip.on{background:var(--accent-soft);border-color:var(--accent);color:#24607c}
+  .quick{margin-top:8px}
+  .quick .chip{padding:7px 11px;font-size:13px}
+  .hint{font-size:13px;color:var(--muted);margin-top:7px}
+  .row{display:flex;gap:8px;margin-top:22px}
+  .btn{flex:1;padding:15px;border-radius:15px;font-size:16px;font-weight:700;background:#eef3f6}
+  .btn.primary{background:var(--accent);color:#fff}
+  .btn.danger{background:var(--red-soft);color:var(--red)}
+  .btn.danger.armed{background:var(--red);color:#fff}
+  .btn:disabled{opacity:.5}
+
+  .card{background:#f5f9fb;border-radius:16px;padding:14px;margin-top:10px}
+  .card p{margin:0;font-size:14px;line-height:1.55}
+  .status{display:flex;align-items:center;gap:7px;font-weight:700;font-size:15px}
+  .small-btns{display:flex;gap:8px;margin-top:12px}
+  .small-btns .btn{padding:11px;font-size:14px}
+  details{margin-top:14px}
+  summary{font-size:14px;font-weight:700;color:var(--accent);cursor:pointer;padding:4px 0}
+
+  /* 영수증 가져오기 */
+  .imp{display:flex;gap:10px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)}
+  .imp:last-child{border-bottom:0}
+  .imp.off{opacity:.45}
+  .ck{width:26px;height:26px;border-radius:8px;border:2px solid #b9c8d2;flex:none;margin-top:9px;display:grid;place-items:center;font-size:15px;color:#fff}
+  .imp:not(.off) .ck{background:var(--accent);border-color:var(--accent)}
+  .imp .emo{width:40px;height:40px;font-size:21px;border-radius:12px;margin-top:2px}
+  .imp-body{flex:1;min-width:0}
+  .imp-body .field{padding:9px 11px;font-size:15px;border-radius:11px}
+  .imp-row{display:flex;gap:6px;margin-top:6px}
+  .imp-row select{flex:none;width:76px;padding:9px 6px}
+  .imp-row input[type=date]{flex:1;min-width:0}
+  .imp-hint{font-size:12px;color:var(--muted);margin-top:4px}
+  .imp-hint.need{color:var(--red);font-weight:700}
+  .field.need{border-color:var(--red)}
+
+  .toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translate(-50%,20px);
+    background:#1d2b36;color:#fff;padding:11px 18px;border-radius:14px;font-size:14px;z-index:40;
+    opacity:0;pointer-events:none;transition:.2s;max-width:88vw;text-align:center}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="top">
+    <div>
+      <h1>우리집 냉장고</h1>
+      <div class="sync"><span class="dot" id="syncDot"></span><span id="syncText">이 기기에만 저장 중</span></div>
+    </div>
+    <button class="icon-btn" id="btnSettings" aria-label="설정">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </button>
+  </div>
+  <div class="summary">
+    <div class="sum red"><b id="cExpired">0</b><span>지났어요</span></div>
+    <div class="sum orange"><b id="cSoon">0</b><span>이틀 이내</span></div>
+    <div class="sum"><b id="cAll">0</b><span>전체</span></div>
+  </div>
+  <div class="tabs" id="tabs">
+    <button class="tab on" data-f="all">전체</button>
+    <button class="tab" data-f="냉장">냉장</button>
+    <button class="tab" data-f="냉동">냉동</button>
+    <button class="tab" data-f="실온">실온</button>
+  </div>
+</header>
+
+<main id="list"></main>
+
+<button class="fab" id="btnAdd">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  식재료 추가
+</button>
+
+<div class="dim" id="dim"></div>
+
+<!-- 식재료 추가/수정 -->
+<section class="sheet" id="itemSheet">
+  <div class="grab"></div>
+  <h2 id="itemTitle">식재료 추가</h2>
+  <label class="lb" for="fName">이름</label>
+  <input class="field" id="fName" placeholder="예: 우유, 두부, 돼지고기" autocomplete="off">
+  <label class="lb">보관</label>
+  <div class="chips" id="fStorage">
+    <button class="chip on" data-v="냉장">🧊 냉장</button>
+    <button class="chip" data-v="냉동">❄️ 냉동</button>
+    <button class="chip" data-v="실온">🏠 실온</button>
+  </div>
+  <label class="lb" for="fDate">유통기한</label>
+  <input class="field" id="fDate" type="date">
+  <div class="chips quick" id="fQuick">
+    <button class="chip" data-d="3">+3일</button>
+    <button class="chip" data-d="7">+1주</button>
+    <button class="chip" data-d="14">+2주</button>
+    <button class="chip" data-m="1">+1달</button>
+    <button class="chip" data-m="3">+3달</button>
+  </div>
+  <div class="hint" id="fDateHint"></div>
+  <label class="lb" for="fMemo">메모 (선택)</label>
+  <input class="field" id="fMemo" placeholder="예: 2개, 반쯤 남음" autocomplete="off">
+  <div class="row">
+    <button class="btn danger" id="btnDelete" hidden>다 먹었어요</button>
+    <button class="btn primary" id="btnSave">저장</button>
+  </div>
+</section>
+
+<!-- 설정 -->
+<section class="sheet" id="setSheet">
+  <div class="grab"></div>
+  <h2>설정</h2>
+
+  <label class="lb">푸시 알림</label>
+  <div class="card">
+    <div class="status"><span class="dot" id="pushDot"></span><span id="pushText">꺼짐</span></div>
+    <p class="hint" style="margin-top:6px">매일 아침 8시에 유통기한이 <b>이틀 남은</b> 식재료를 알려 드려요.</p>
+    <div class="small-btns">
+      <button class="btn primary" id="btnPush">알림 켜기</button>
+      <button class="btn" id="btnTest">테스트 알림</button>
+    </div>
+  </div>
+
+  <label class="lb">서버 연결 (구글 시트)</label>
+  <div class="card">
+    <input class="field" id="sUrl" placeholder="GAS 웹 앱 URL (https://script.google.com/...)" autocomplete="off">
+    <input class="field" id="sKey" placeholder="앱 키 (GAS 실행 로그에 나온 값)" autocomplete="off" style="margin-top:8px">
+    <div class="small-btns">
+      <button class="btn primary" id="btnConnect">저장하고 연결</button>
+      <button class="btn" id="btnRefresh">새로고침</button>
+    </div>
+  </div>
+
+  <details>
+    <summary>알림이 안 올 때</summary>
+    <div class="card">
+      <p>① 서버 연결이 먼저 되어 있어야 해요.<br>
+      ② 크롬 주소창 왼쪽 아이콘 → 권한 → 알림이 '허용'인지 확인해 주세요.<br>
+      ③ 휴대폰 설정 → 애플리케이션 → Chrome → 알림이 켜져 있어야 해요.<br>
+      ④ 배터리 절전 앱 목록에 Chrome이 들어가 있으면 알림이 늦을 수 있어요.</p>
+    </div>
+  </details>
+  <div class="row"><button class="btn" id="btnCloseSet">닫기</button></div>
+</section>
+
+<!-- 영수증에서 가져오기 -->
+<section class="sheet" id="impSheet">
+  <div class="grab"></div>
+  <h2 id="impTitle">영수증에서 가져온 식재료</h2>
+  <p class="hint" style="margin:-8px 0 6px">유통기한만 확인하고 추가하세요. 뺄 것은 왼쪽 체크를 끄면 돼요.</p>
+  <div id="impList"></div>
+  <div class="row">
+    <button class="btn" id="btnImpCancel">취소</button>
+    <button class="btn primary" id="btnImpAdd">추가</button>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script>
+<script>
+(() => {
+  // ---------- 저장소 ----------
+  const store = {
+    get(k, d){ try{ const v = localStorage.getItem('fridge.'+k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+    set(k, v){ try{ localStorage.setItem('fridge.'+k, JSON.stringify(v)); }catch(e){} }
+  };
+  let items = store.get('items', []);
+  let queue = store.get('queue', []);
+  let settings = store.get('settings', { url:'', key:'' });
+  let filter = 'all';
+  let editingId = null;
+
+  const $ = (id) => document.getElementById(id);
+
+  // ---------- 날짜 ----------
+  const pad = (n) => String(n).padStart(2,'0');
+  const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const today = () => ymd(new Date());
+  function daysLeft(exp){
+    const [a,b,c] = today().split('-').map(Number);
+    const [x,y,z] = exp.split('-').map(Number);
+    return Math.round((Date.UTC(x,y-1,z) - Date.UTC(a,b-1,c)) / 86400000);
+  }
+  const WD = ['일','월','화','수','목','금','토'];
+  function prettyDate(exp){
+    const [x,y,z] = exp.split('-').map(Number);
+    const d = new Date(x,y-1,z);
+    return `${y}/${z} (${WD[d.getDay()]})`;
+  }
+  function badge(n){
+    if (n < 0)  return ['b-red', `${-n}일 지남`];
+    if (n === 0) return ['b-red', '오늘까지'];
+    if (n <= 2) return ['b-orange', `D-${n}`];
+    if (n <= 6) return ['b-yellow', `D-${n}`];
+    return ['b-green', `D-${n}`];
+  }
+
+  // ---------- 보관 기간 기억 ----------
+  let periods = store.get('periods', {});
+  const keyName = (n) => String(n).replace(/\s+/g, '').toLowerCase();
+  function rememberPeriod(name, expiry){
+    const n = daysLeft(expiry);
+    if (n > 0 && n <= 730){ periods[keyName(name)] = n; store.set('periods', periods); }
+  }
+  function addDays(n){ const d = new Date(); d.setDate(d.getDate() + n); return ymd(d); }
+
+  // ---------- 이모지 ----------
+  const EMOJI = [
+    [/우유|라떼/,'🥛'],[/요거트|요구르트/,'🥣'],[/치즈/,'🧀'],[/버터/,'🧈'],[/계란|달걀|메추리/,'🥚'],
+    [/두부|콩/,'🫘'],[/돼지|삼겹|목살|소고기|한우|갈비|고기|불고기|차돌/,'🥩'],[/닭|치킨/,'🍗'],
+    [/햄|소시지|베이컨|스팸/,'🌭'],[/생선|연어|고등어|갈치|참치|조기|명태/,'🐟'],[/새우/,'🦐'],
+    [/오징어|문어|낙지|쭈꾸미/,'🦑'],[/조개|굴|홍합|바지락/,'🦪'],[/만두/,'🥟'],
+    [/사과/,'🍎'],[/배$/,'🍐'],[/바나나/,'🍌'],[/딸기/,'🍓'],[/포도|샤인/,'🍇'],[/귤|오렌지|한라봉/,'🍊'],
+    [/레몬/,'🍋'],[/수박/,'🍉'],[/복숭아/,'🍑'],[/키위/,'🥝'],[/블루베리|베리/,'🫐'],[/아보카도/,'🥑'],
+    [/토마토/,'🍅'],[/당근/,'🥕'],[/양파/,'🧅'],[/마늘/,'🧄'],[/감자/,'🥔'],[/고구마/,'🍠'],
+    [/버섯/,'🍄'],[/브로콜리/,'🥦'],[/오이/,'🥒'],[/가지/,'🍆'],[/고추|김치|청양/,'🌶️'],[/옥수수/,'🌽'],
+    [/배추|상추|양배추|시금치|깻잎|채소|야채|샐러드|대파|파$|부추/,'🥬'],
+    [/빵|식빵|베이글/,'🍞'],[/케이크/,'🍰'],[/떡/,'🍡'],[/밥/,'🍚'],[/면|국수|라면|우동|파스타/,'🍜'],
+    [/아이스크림/,'🍨'],[/주스/,'🧃'],[/맥주/,'🍺'],[/와인/,'🍷'],[/콜라|사이다|음료/,'🥤'],
+    [/소스|케첩|마요|잼|된장|고추장|간장/,'🫙'],[/반찬/,'🍱'],[/어묵/,'🍢']
+  ];
+  function emojiOf(it){
+    for (const [re, e] of EMOJI) if (re.test(it.name)) return e;
+    return it.storage === '냉동' ? '❄️' : it.storage === '실온' ? '🥫' : '🥡';
+  }
+
+  // ---------- 화면 ----------
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  function render(){
+    const all = items.slice().sort((a,b) => a.expiry.localeCompare(b.expiry) || a.name.localeCompare(b.name));
+    $('cAll').textContent = all.length;
+    $('cExpired').textContent = all.filter(i => daysLeft(i.expiry) < 0).length;
+    $('cSoon').textContent = all.filter(i => { const n = daysLeft(i.expiry); return n >= 0 && n <= 2; }).length;
+
+    const shown = filter === 'all' ? all : all.filter(i => i.storage === filter);
+    const list = $('list');
+    if (!shown.length){
+      list.innerHTML = `<div class="empty"><div class="big">🧊</div>${
+        items.length ? '이 칸은 비어 있어요.' : '아직 등록한 식재료가 없어요.<br>아래 <b>식재료 추가</b>를 눌러 시작해 보세요.'}</div>`;
+      return;
+    }
+    const groups = [
+      ['지났어요', n => n < 0],
+      ['이틀 이내', n => n >= 0 && n <= 2],
+      ['일주일 이내', n => n >= 3 && n <= 6],
+      ['여유 있어요', n => n >= 7]
+    ];
+    let html = '';
+    for (const [title, test] of groups){
+      const g = shown.filter(i => test(daysLeft(i.expiry)));
+      if (!g.length) continue;
+      html += `<div class="group">${title} <i>${g.length}</i></div>`;
+      for (const it of g){
+        const n = daysLeft(it.expiry);
+        const [cls, txt] = badge(n);
+        const sub = [it.storage, it.memo].filter(Boolean).map(esc).join(' · ');
+        html += `<button class="item${n<0?' expired':''}" data-id="${esc(it.id)}">
+          <div class="emo">${emojiOf(it)}</div>
+          <div class="info"><div class="name">${esc(it.name)}</div><div class="sub">${sub}</div></div>
+          <div class="right"><span class="badge ${cls}">${txt}</span><div class="date">${prettyDate(it.expiry)}</div></div>
+        </button>`;
+      }
+    }
+    list.innerHTML = html;
+  }
+
+  $('tabs').addEventListener('click', e => {
+    const t = e.target.closest('.tab'); if (!t) return;
+    filter = t.dataset.f;
+    document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b === t));
+    render();
+  });
+  $('list').addEventListener('click', e => {
+    const b = e.target.closest('.item'); if (b) openItem(b.dataset.id);
+  });
+
+  // ---------- 시트 ----------
+  function openSheet(id){ $('dim').classList.add('on'); $(id).classList.add('on'); }
+  function closeSheets(){ $('dim').classList.remove('on'); document.querySelectorAll('.sheet').forEach(s => s.classList.remove('on')); }
+  $('dim').addEventListener('click', closeSheets);
+
+  function setStorage(v){ document.querySelectorAll('#fStorage .chip').forEach(c => c.classList.toggle('on', c.dataset.v === v)); }
+  function getStorage(){ return document.querySelector('#fStorage .chip.on')?.dataset.v || '냉장'; }
+  $('fStorage').addEventListener('click', e => { const c = e.target.closest('.chip'); if (c) setStorage(c.dataset.v); });
+
+  function updateDateHint(){
+    const v = $('fDate').value;
+    if (!v){ $('fDateHint').textContent = ''; return; }
+    const n = daysLeft(v);
+    $('fDateHint').textContent = n < 0 ? `${-n}일 지났어요` : n === 0 ? '오늘까지예요' : `${n}일 남았어요`;
+  }
+  $('fDate').addEventListener('input', updateDateHint);
+  $('fQuick').addEventListener('click', e => {
+    const c = e.target.closest('.chip'); if (!c) return;
+    const d = new Date();
+    if (c.dataset.d) d.setDate(d.getDate() + Number(c.dataset.d));
+    if (c.dataset.m) d.setMonth(d.getMonth() + Number(c.dataset.m));
+    $('fDate').value = ymd(d); updateDateHint();
+  });
+
+  function openItem(id){
+    editingId = id || null;
+    const it = id ? items.find(i => i.id === id) : null;
+    $('itemTitle').textContent = it ? '식재료 수정' : '식재료 추가';
+    $('fName').value = it ? it.name : '';
+    $('fDate').value = it ? it.expiry : '';
+    $('fMemo').value = it ? (it.memo || '') : '';
+    setStorage(it ? it.storage : (filter !== 'all' ? filter : '냉장'));
+    updateDateHint();
+    const del = $('btnDelete');
+    del.hidden = !it; del.classList.remove('armed'); del.textContent = '다 먹었어요';
+    openSheet('itemSheet');
+    if (!it) setTimeout(() => $('fName').focus(), 260);
+  }
+  $('btnAdd').addEventListener('click', () => openItem(null));
+
+  // 이름을 쓰면 지난번 보관 기간으로 유통기한 자동 채우기
+  $('fName').addEventListener('change', () => {
+    const p = periods[keyName($('fName').value)];
+    if (p && !$('fDate').value){
+      $('fDate').value = addDays(p); updateDateHint();
+      $('fDateHint').textContent = `지난번처럼 ${p}일 뒤로 넣었어요`;
+    }
+  });
+
+  // ---------- 영수증에서 가져오기 ----------
+  let impRows = [];
+  const newId = () => 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+
+  function readImport(){
+    const m = location.hash.match(/^#import=([A-Za-z0-9_-]+)/);
+    if (!m) return;
+    try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}
+    try{
+      const b64 = m[1].replace(/-/g, '+').replace(/_/g, '/');
+      const bin = atob(b64 + '==='.slice((b64.length + 3) % 4));
+      const json = new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0)));
+      const list = (JSON.parse(json).items || []).filter(x => x && x.n).slice(0, 60);
+      if (list.length) openImport(list); else toast('가져올 식재료가 없어요');
+    }catch(e){ toast('가져오기 정보를 읽지 못했어요'); }
+  }
+
+  function openImport(list){
+    impRows = list.map(x => {
+      const name = String(x.n).trim().slice(0, 40);
+      const mem = periods[keyName(name)];
+      const sug = Number(x.d);
+      let expiry = '', src = '';
+      if (mem){ expiry = addDays(mem); src = `지난번처럼 ${mem}일`; }
+      else if (sug > 0 && sug < 1000){ expiry = addDays(sug); src = `보통 ${sug}일 정도 (추천값)`; }
+      return { name, storage: ['냉장','냉동','실온'].includes(x.s) ? x.s : '냉장', expiry, src, on: true, need: false };
+    });
+    renderImport();
+    openSheet('impSheet');
+  }
+
+  function renderImport(){
+    $('impTitle').textContent = `영수증에서 가져온 식재료 ${impRows.length}개`;
+    $('impList').innerHTML = impRows.map((r, i) => `
+      <div class="imp${r.on ? '' : ' off'}" data-i="${i}">
+        <button class="ck" data-act="toggle">${r.on ? '✓' : ''}</button>
+        <div class="emo">${emojiOf(r)}</div>
+        <div class="imp-body">
+          <input class="field" data-f="name" value="${esc(r.name)}">
+          <div class="imp-row">
+            <select class="field" data-f="storage">${['냉장','냉동','실온'].map(s => `<option${s === r.storage ? ' selected' : ''}>${s}</option>`).join('')}</select>
+            <input class="field${r.need ? ' need' : ''}" type="date" data-f="expiry" value="${r.expiry}">
+          </div>
+          <div class="imp-hint${r.need ? ' need' : ''}">${r.need ? '유통기한을 골라 주세요' : esc(r.src || (r.expiry ? '' : '유통기한을 골라 주세요'))}</div>
+        </div>
+      </div>`).join('');
+    const n = impRows.filter(r => r.on).length;
+    $('btnImpAdd').textContent = n ? `${n}개 추가` : '추가';
+    $('btnImpAdd').disabled = !n;
+  }
+
+  $('impList').addEventListener('click', e => {
+    const b = e.target.closest('[data-act="toggle"]'); if (!b) return;
+    const r = impRows[b.closest('.imp').dataset.i];
+    r.on = !r.on; renderImport();
+  });
+  $('impList').addEventListener('change', e => {
+    const f = e.target.dataset.f; if (!f) return;
+    const r = impRows[e.target.closest('.imp').dataset.i];
+    r[f] = e.target.value.trim();
+    if (f === 'expiry'){ r.need = !r.expiry; r.src = ''; }
+    if (f === 'name' || f === 'storage' || f === 'expiry') renderImport();
+  });
+  $('btnImpCancel').addEventListener('click', () => { impRows = []; closeSheets(); });
+  $('btnImpAdd').addEventListener('click', () => {
+    const chosen = impRows.filter(r => r.on && r.name);
+    let missing = 0;
+    chosen.forEach(r => { r.need = !r.expiry; if (r.need) missing++; });
+    if (missing){ renderImport(); return toast(`유통기한이 빠진 항목이 ${missing}개 있어요`); }
+    const now = new Date().toISOString();
+    chosen.forEach(r => {
+      const it = { id: newId(), name: r.name, expiry: r.expiry, storage: r.storage, memo: '', updated: now };
+      items.push(it); rememberPeriod(r.name, r.expiry);
+      queue = queue.filter(q => (q.item ? q.item.id : q.id) !== it.id);
+      queue.push({ action:'upsert', item: it });
+    });
+    store.set('items', items); store.set('queue', queue);
+    flush(); render(); closeSheets(); impRows = [];
+    toast(`${chosen.length}개를 냉장고에 넣었어요`);
+  });
+  window.addEventListener('hashchange', readImport);
+
+  $('btnSave').addEventListener('click', () => {
+    const name = $('fName').value.trim();
+    const expiry = $('fDate').value;
+    if (!name) return toast('이름을 입력해 주세요');
+    if (!expiry) return toast('유통기한을 골라 주세요');
+    const old = editingId ? items.find(i => i.id === editingId) : null;
+    const it = {
+      id: old ? old.id : 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+      name, expiry, storage: getStorage(), memo: $('fMemo').value.trim(),
+      updated: new Date().toISOString()
+    };
+    items = old ? items.map(i => i.id === it.id ? it : i) : items.concat(it);
+    store.set('items', items);
+    rememberPeriod(name, expiry);
+    enqueue({ action:'upsert', item: it });
+    render(); closeSheets();
+    toast(old ? '수정했어요' : `${name} 추가했어요`);
+  });
+
+  $('btnDelete').addEventListener('click', () => {
+    const del = $('btnDelete');
+    if (!del.classList.contains('armed')){
+      del.classList.add('armed'); del.textContent = '한 번 더 누르면 삭제';
+      setTimeout(() => { del.classList.remove('armed'); del.textContent = '다 먹었어요'; }, 2500);
+      return;
+    }
+    const it = items.find(i => i.id === editingId);
+    items = items.filter(i => i.id !== editingId);
+    store.set('items', items);
+    enqueue({ action:'delete', id: editingId });
+    render(); closeSheets();
+    if (it) toast(`${it.name} 정리했어요`);
+  });
+
+  // ---------- 서버 동기화 ----------
+  function setSync(state, text){
+    $('syncDot').className = 'dot ' + (state || '');
+    $('syncText').textContent = text;
+  }
+  const connected = () => !!(settings.url && settings.key);
+
+  async function api(action, payload){
+    if (!connected()) throw new Error('not connected');
+    let res;
+    if (action === 'list'){
+      res = await fetch(`${settings.url}?action=list&key=${encodeURIComponent(settings.key)}`);
+    } else {
+      res = await fetch(settings.url, { method:'POST', body: JSON.stringify({ action, key: settings.key, ...payload }) });
+    }
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || '서버 오류');
+    return data;
+  }
+
+  function enqueue(op){
+    // 같은 식재료에 대한 이전 작업은 합치기
+    const id = op.item ? op.item.id : op.id;
+    queue = queue.filter(q => (q.item ? q.item.id : q.id) !== id);
+    queue.push(op);
+    store.set('queue', queue);
+    flush();
+  }
+
+  let flushing = false;
+  async function flush(){
+    if (!connected()){ setSync('', '이 기기에만 저장 중'); return false; }
+    if (flushing) return false;
+    flushing = true; setSync('busy', '저장 중…');
+    try{
+      while (queue.length){
+        await api(queue[0].action, queue[0]);
+        queue.shift(); store.set('queue', queue);
+      }
+      setSync('ok', '구글 시트와 동기화됨');
+      return true;
+    }catch(e){
+      setSync('err', '저장 대기 중 (연결 확인)');
+      return false;
+    }finally{ flushing = false; }
+  }
+
+  async function sync(silent){
+    if (!connected()){ setSync('', '이 기기에만 저장 중'); render(); return; }
+    const ok = await flush();
+    if (!ok && queue.length) return;
+    try{
+      setSync('busy', '불러오는 중…');
+      const data = await api('list');
+      items = data.items; store.set('items', items);
+      setSync('ok', '구글 시트와 동기화됨');
+      render();
+      if (!silent) toast('최신 목록을 불러왔어요');
+    }catch(e){
+      setSync('err', '연결 실패 · 이 기기 목록 표시 중');
+      if (!silent) toast('서버 연결에 실패했어요. URL과 키를 확인해 주세요');
+    }
+  }
+
+  // ---------- 설정 ----------
+  $('btnSettings').addEventListener('click', () => {
+    $('sUrl').value = settings.url; $('sKey').value = settings.key;
+    updatePushUI(); openSheet('setSheet');
+  });
+  $('btnCloseSet').addEventListener('click', closeSheets);
+  $('btnConnect').addEventListener('click', async () => {
+    settings = { url: $('sUrl').value.trim(), key: $('sKey').value.trim() };
+    store.set('settings', settings);
+    if (!connected()) return toast('URL과 키를 모두 입력해 주세요');
+    // 처음 연결이면 이 기기에 있던 목록을 서버로 올림
+    if (!store.get('everSynced', false)){
+      items.forEach(it => { if (!queue.some(q => q.item && q.item.id === it.id)) queue.push({ action:'upsert', item: it }); });
+      store.set('queue', queue);
+    }
+    await sync(false);
+    if ($('syncDot').classList.contains('ok')){
+      store.set('everSynced', true);
+      if (window.Notification && Notification.permission === 'granted') registerPush(true);
+    }
+  });
+  $('btnRefresh').addEventListener('click', () => sync(false));
+
+  // ---------- 푸시 알림 ----------
+  const fbReady = () => typeof firebase !== 'undefined' && self.FIREBASE_CONFIG && self.FIREBASE_CONFIG.apiKey && self.VAPID_KEY;
+  const pushSupported = () => 'serviceWorker' in navigator && 'Notification' in window && 'PushManager' in window;
+  let messaging = null, swReg = null;
+
+  function updatePushUI(){
+    let st = '', txt = '꺼짐', btn = '알림 켜기';
+    if (!pushSupported()){ txt = '이 브라우저는 푸시를 지원하지 않아요'; }
+    else if (!fbReady()){ txt = 'config.js에 Firebase 정보가 필요해요'; st = 'err'; }
+    else if (Notification.permission === 'denied'){ txt = '알림이 차단되어 있어요 (크롬 권한 확인)'; st = 'err'; }
+    else if (Notification.permission === 'granted' && store.get('token','')){ txt = '켜짐 · 매일 아침 8시 확인'; st = 'ok'; btn = '다시 등록'; }
+    $('pushDot').className = 'dot ' + st; $('pushText').textContent = txt; $('btnPush').textContent = btn;
+  }
+
+  async function registerPush(quiet){
+    if (!pushSupported()) { if (!quiet) toast('이 브라우저는 푸시를 지원하지 않아요'); return; }
+    if (!fbReady()) { if (!quiet) toast('config.js에 Firebase 정보를 먼저 넣어 주세요'); return; }
+    if (!connected()) { if (!quiet) toast('서버 연결을 먼저 해 주세요'); return; }
+    try{
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted'){ updatePushUI(); if (!quiet) toast('알림 권한이 필요해요'); return; }
+      if (!firebase.apps.length) firebase.initializeApp(self.FIREBASE_CONFIG);
+      swReg = swReg || await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+      await navigator.serviceWorker.ready;
+      if (!messaging){
+        messaging = firebase.messaging();
+        messaging.onMessage(p => {
+          const n = p.notification || {};
+          toast(`🔔 ${n.title || '알림'}`);
+          swReg.showNotification(n.title || '냉장고', { body: n.body || '', icon: 'icon-192.png' });
+        });
+      }
+      const token = await messaging.getToken({ vapidKey: self.VAPID_KEY, serviceWorkerRegistration: swReg });
+      if (!token) throw new Error('토큰 없음');
+      if (token !== store.get('token','') || !quiet){
+        await api('saveToken', { token, appUrl: location.origin + location.pathname });
+        store.set('token', token);
+      }
+      updatePushUI();
+      if (!quiet) toast('알림을 켰어요');
+    }catch(e){
+      console.error(e); updatePushUI();
+      if (!quiet) toast('알림 등록 실패: ' + (e.message || e));
+    }
+  }
+  $('btnPush').addEventListener('click', () => registerPush(false));
+  $('btnTest').addEventListener('click', async () => {
+    if (!connected()) return toast('서버 연결을 먼저 해 주세요');
+    try{
+      const r = await api('test', {});
+      toast(r.sent ? '테스트 알림을 보냈어요' : '등록된 기기가 없어요. 알림 켜기를 먼저 눌러 주세요');
+    }catch(e){ toast('발송 실패: ' + e.message); }
+  });
+
+  // ---------- 기타 ----------
+  let tt;
+  function toast(msg){
+    const t = $('toast'); t.textContent = msg; t.classList.add('on');
+    clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 2300);
+  }
+
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { render(); sync(true); } });
+
+  render();
+  sync(true);
+  readImport();
+  if (pushSupported() && fbReady() && connected() && Notification.permission === 'granted') registerPush(true);
+})();
+</script>
+</body>
+</html>
