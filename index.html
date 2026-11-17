@@ -3,114 +3,215 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#eef4f8">
+<meta name="theme-color" content="#fdf1f4">
 <title>우리집 냉장고</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
-  :root{
-    --bg:#eef4f8; --card:#fff; --ink:#1d2b36; --muted:#6b7c89; --line:#dde7ee;
-    --accent:#3f8fb5; --accent-soft:#e1eff6;
-    --red:#d9483b; --red-soft:#fdecea;
-    --orange:#e9801f; --orange-soft:#fff1e2;
-    --yellow:#b8900f; --yellow-soft:#fbf4d9;
-    --green:#3f9468; --green-soft:#e5f4ec;
+  /* ===== 색상 테마 (설정에서 선택) ===== */
+  :root, html[data-color="pink"]{
+    --bg:#fdf1f4; --card:#fff; --chip:#f8eef1; --field:#fffbfc; --ink:#2b2427; --muted:#7f6d74; --line:#f3e1e7;
+    --accent:#f0628f; --accent-soft:#ffe3ec; --accent-deep:#c93f6c; --on-accent:#fff;
+    --grad1:#f9a3bd; --grad2:#f47ea2; --glow:rgba(240,98,143,.22); --soft-shadow:rgba(240,98,143,.07);
+    --red:#ef4f6d; --red-soft:#ffe5ea; --yellow:#c48a00; --yellow-soft:#fff3d6; --ok:#2f9e63;
+    --s1bg:#ffe6ee; --s1fg:#f0628f; --s2bg:#ece7ff; --s2fg:#8467e3; --s3bg:#fff2d8; --s3fg:#d49317;
   }
+  html[data-color="blue"]{
+    --bg:#f1f5fd; --chip:#eef2fa; --field:#fbfcff; --ink:#1f2633; --muted:#5f6b80; --line:#e2e9f5;
+    --accent:#3b7cf5; --accent-soft:#e3edff; --accent-deep:#2457c9;
+    --grad1:#8db6ff; --grad2:#4f86f7; --glow:rgba(59,124,245,.24); --soft-shadow:rgba(59,124,245,.07);
+    --s1bg:#e3edff; --s1fg:#3b7cf5; --s2bg:#e8e5ff; --s2fg:#6b5ce0; --s3bg:#fff2d8; --s3fg:#d49317;
+  }
+  html[data-color="green"]{
+    --bg:#f0f8f3; --chip:#eaf4ee; --field:#fbfefc; --ink:#1d2a22; --muted:#5d6e64; --line:#dfeee5;
+    --accent:#1fb35d; --accent-soft:#dcf6e5; --accent-deep:#14843f;
+    --grad1:#7fe0a5; --grad2:#27b765; --glow:rgba(31,179,93,.24); --soft-shadow:rgba(31,179,93,.07);
+    --s1bg:#dcf6e5; --s1fg:#1fb35d; --s2bg:#e3edff; --s2fg:#3b7cf5; --s3bg:#fff2d8; --s3fg:#d49317;
+  }
+  html[data-color="dark"]{
+    color-scheme:dark;
+    --bg:#111113; --card:#1c1c20; --chip:#26262b; --field:#202025; --ink:#f3f3f5; --muted:#8e8e98; --line:#2c2c32;
+    --accent:#f3f3f5; --accent-soft:#2c2c32; --accent-deep:#ffffff; --on-accent:#111113;
+    --grad1:#2a2a30; --grad2:#1c1c21; --glow:rgba(0,0,0,.5); --soft-shadow:rgba(0,0,0,.35);
+    --red:#ff6b7f; --red-soft:#3a1f25; --yellow:#f2c14e; --yellow-soft:#3a3120; --ok:#5ad39a;
+    --s1bg:#2b2f3a; --s1fg:#9cc0ff; --s2bg:#302b3d; --s2fg:#c3b2ff; --s3bg:#3a3324; --s3fg:#f2c14e;
+  }
+
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;background:var(--bg);color:var(--ink);
-    font-family:Pretendard,-apple-system,"Noto Sans KR","Malgun Gothic",sans-serif;}
-  body{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+    font-family:Pretendard,-apple-system,"Noto Sans KR","Malgun Gothic",sans-serif}
+  body{padding-bottom:calc(120px + env(safe-area-inset-bottom))}
   button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
-  input{font:inherit;color:inherit}
+  input,select{font:inherit;color:inherit}
 
-  header{position:sticky;top:0;z-index:5;background:var(--bg);padding:18px 18px 8px}
+  /* ===== 상단 ===== */
+  header.appbar{padding:calc(14px + env(safe-area-inset-top)) 18px 0}
   .top{display:flex;align-items:center;justify-content:space-between}
-  h1{font-size:22px;margin:0;font-weight:800;letter-spacing:-.4px}
-  .sync{font-size:12px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:5px}
-  .dot{width:7px;height:7px;border-radius:50%;background:#b5c3cd}
-  .dot.ok{background:var(--green)} .dot.busy{background:var(--orange)} .dot.err{background:var(--red)}
-  .icon-btn{width:42px;height:42px;border-radius:14px;background:var(--card);display:grid;place-items:center;
-    box-shadow:0 1px 2px rgba(30,60,80,.08)}
-  .icon-btn svg{width:22px;height:22px;stroke:var(--ink)}
+  h1{font-size:16px;margin:0;font-weight:800;color:var(--accent);letter-spacing:-.3px}
+  .sync{display:none;font-size:12px;margin-top:3px;align-items:center;gap:5px;color:var(--red)}
+  .sync.show{display:flex}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+  .dot.ok{background:var(--ok)} .dot.busy{background:var(--yellow)} .dot.err{background:var(--red)}
+  .actions{display:flex;gap:4px;align-items:center}
+  .icon-btn{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:var(--accent)}
+  .icon-btn svg{width:22px;height:22px;stroke:currentColor}
+  .receipt-btn{display:flex;align-items:center;gap:5px;width:auto;height:38px;padding:0 14px;border-radius:999px;
+    background:var(--card);box-shadow:0 2px 8px var(--soft-shadow);font-size:14px;font-weight:700;text-decoration:none}
+  .receipt-btn svg{width:18px;height:18px}
 
-  .summary{display:flex;gap:8px;margin:14px 0 12px}
-  .sum{flex:1;background:var(--card);border-radius:16px;padding:11px 12px;box-shadow:0 1px 2px rgba(30,60,80,.06)}
-  .sum b{display:block;font-size:22px;font-weight:800;line-height:1.1}
-  .sum span{font-size:12px;color:var(--muted)}
-  .sum.red b{color:var(--red)} .sum.orange b{color:var(--orange)}
+  .hero{padding:18px 18px 4px}
+  .greet-1,.greet-2{font-size:25px;font-weight:800;letter-spacing:-.6px;line-height:1.3}
+  .greet-2{color:var(--accent)}
+  .greet-sub{font-size:14px;color:var(--muted);margin-top:8px;font-weight:500}
 
-  .tabs{display:flex;gap:6px;background:#e2ebf1;padding:4px;border-radius:14px}
-  .tab{flex:1;padding:9px 0;border-radius:11px;font-size:14px;font-weight:600;color:var(--muted)}
-  .tab.on{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(30,60,80,.1)}
+  .today{margin-top:20px;border-radius:26px;padding:20px;color:#fff;
+    background:linear-gradient(135deg,var(--grad1) 0%,var(--grad2) 100%);box-shadow:0 10px 24px var(--glow)}
+  html[data-color="dark"] .today{box-shadow:inset 0 0 0 1px #2e2e35}
+  .today-label{font-size:13px;font-weight:700;opacity:.95}
+  .today-head{font-size:19px;line-height:1.45;margin-top:6px;font-weight:800}
+  .today-head em{font-style:normal;background:rgba(255,255,255,.25);padding:0 6px;border-radius:8px}
+  html[data-color="dark"] .today-head em{background:rgba(255,255,255,.12)}
+  .today-names{font-size:14px;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .today-names:empty{display:none}
+  .summary{display:flex;gap:8px;margin:14px 0 0}
+  .sum{flex:1;background:rgba(255,255,255,.2);border-radius:16px;padding:9px 12px}
+  html[data-color="dark"] .sum{background:rgba(255,255,255,.06)}
+  .sum b{display:block;font-size:21px;font-weight:800;line-height:1.15}
+  .sum span{font-size:12.5px;font-weight:600}
+  .today-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:14px;padding:13px;
+    border-radius:999px;background:#fff;color:var(--accent);font-size:15px;font-weight:800}
+  html[data-color="dark"] .today-btn{background:var(--accent);color:var(--on-accent)}
+
+  /* ===== 탭 · 목록 ===== */
+  .tabbar{position:sticky;top:0;z-index:5;background:var(--bg);padding:20px 18px 6px}
+  .tabs{display:flex;gap:4px;background:var(--card);border-radius:999px;padding:5px;box-shadow:0 2px 10px var(--soft-shadow)}
+  .tab{flex:1;padding:9px 0;border-radius:999px;font-size:14px;font-weight:600;color:var(--muted)}
+  .tab.on{background:var(--accent);color:var(--on-accent)}
 
   main{padding:4px 18px}
-  .group{font-size:13px;font-weight:700;color:var(--muted);margin:18px 4px 8px;display:flex;gap:6px;align-items:center}
-  .group i{font-style:normal;font-weight:600;background:#e2ebf1;border-radius:8px;padding:1px 7px;font-size:12px}
+  .group{font-size:16px;font-weight:800;margin:20px 4px 10px;display:flex;gap:6px;align-items:center}
+  .group i{font-style:normal;color:var(--accent);font-size:15px}
+  html[data-color="dark"] .group i{color:var(--muted)}
   .item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);
-    border-radius:18px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 2px rgba(30,60,80,.06)}
+    border-radius:20px;padding:13px 14px;margin-bottom:9px;box-shadow:0 3px 12px var(--soft-shadow)}
   .item:active{transform:scale(.99)}
-  .emo{width:46px;height:46px;border-radius:14px;background:#f1f6f9;display:grid;place-items:center;font-size:25px;flex:none}
+  .emo{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;flex:none;font-size:24px;
+    background:var(--s1bg);color:var(--s1fg)}
+  .emo[data-s="냉동"]{background:var(--s2bg);color:var(--s2fg)}
+  .emo[data-s="실온"]{background:var(--s3bg);color:var(--s3fg)}
+  .ic-line{width:24px;height:24px;stroke:currentColor}
+  .ic-letter{font-size:18px;font-weight:800}
   .info{flex:1;min-width:0}
   .name{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .sub{font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sub{font-size:14px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .right{text-align:right;flex:none}
-  .badge{display:inline-block;font-size:13px;font-weight:800;padding:4px 9px;border-radius:9px}
-  .date{font-size:12px;color:var(--muted);margin-top:4px}
-  .b-red{background:var(--red-soft);color:var(--red)}
-  .b-orange{background:var(--orange-soft);color:var(--orange)}
+  .badge{display:inline-block;font-size:12px;font-weight:800;padding:5px 11px;border-radius:999px}
+  .date{font-size:13px;color:var(--muted);margin-top:5px;font-weight:500}
+  .b-red{background:var(--accent);color:var(--on-accent);display:inline-flex;align-items:center;gap:3px}
+  .b-red svg{width:13px;height:13px;stroke:currentColor}
+  .b-orange{background:var(--accent-soft);color:var(--accent-deep)}
   .b-yellow{background:var(--yellow-soft);color:var(--yellow)}
-  .b-green{background:var(--green-soft);color:var(--green)}
-  .item.expired .name{color:var(--red)}
+  .b-green{background:var(--chip);color:var(--muted)}
+  html[data-color="dark"] .b-orange{background:#3a2a1e;color:#ffb36b}
 
-  .empty{text-align:center;color:var(--muted);padding:60px 20px;font-size:15px;line-height:1.6}
-  .empty .big{font-size:46px;margin-bottom:8px}
+  /* 2칸 카드형 */
+  html[data-layout="grid"] main{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-content:start}
+  html[data-layout="grid"] .group{grid-column:1/-1;margin:16px 4px 0}
+  html[data-layout="grid"] .empty{grid-column:1/-1}
+  html[data-layout="grid"] .item{flex-direction:column;align-items:flex-start;gap:10px;margin:0;padding:15px}
+  html[data-layout="grid"] .item .info{width:100%}
+  html[data-layout="grid"] .item .right{text-align:left;display:flex;align-items:center;gap:6px}
+  html[data-layout="grid"] .item .date{margin:0}
 
-  .fab{position:fixed;right:20px;bottom:calc(24px + env(safe-area-inset-bottom));z-index:6;
-    height:58px;padding:0 22px 0 18px;border-radius:20px;background:var(--accent);color:#fff;
-    font-size:16px;font-weight:700;display:flex;align-items:center;gap:6px;box-shadow:0 6px 18px rgba(63,143,181,.4)}
-  .fab svg{width:22px;height:22px;stroke:#fff}
+  .empty{text-align:center;color:var(--muted);padding:50px 20px;font-size:15px;line-height:1.6}
+  .empty .big{font-size:42px;margin-bottom:8px}
 
-  /* bottom sheet */
-  .dim{position:fixed;inset:0;background:rgba(20,35,45,.38);z-index:20;opacity:0;pointer-events:none;transition:opacity .2s}
+  .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(22px + env(safe-area-inset-bottom));z-index:6;
+    height:50px;padding:0 24px 0 20px;border-radius:999px;background:var(--accent);color:var(--on-accent);white-space:nowrap;
+    font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 8px 20px var(--glow)}
+  .fab:active{transform:translateX(-50%) scale(.97)}
+  body::after{content:"";position:fixed;left:0;right:0;bottom:0;height:calc(96px + env(safe-area-inset-bottom));z-index:5;pointer-events:none;
+    background:linear-gradient(to bottom,transparent,var(--bg) 70%)}
+  .fab svg{width:20px;height:20px;stroke:currentColor}
+
+  /* ===== 시트(추가·설정·가져오기) ===== */
+  .dim{position:fixed;inset:0;background:rgba(20,15,18,.4);z-index:20;opacity:0;pointer-events:none;transition:opacity .2s}
   .dim.on{opacity:1;pointer-events:auto}
-  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--card);border-radius:24px 24px 0 0;
+  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--card);border-radius:26px 26px 0 0;
     padding:10px 20px calc(22px + env(safe-area-inset-bottom));max-height:92vh;overflow-y:auto;
     transform:translateY(105%);transition:transform .25s ease}
   .sheet.on{transform:none}
-  .grab{width:40px;height:5px;border-radius:3px;background:#d4dee5;margin:0 auto 14px}
+  .grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 14px}
   .sheet h2{font-size:19px;margin:0 0 16px;font-weight:800}
-  label.lb{display:block;font-size:13px;font-weight:700;color:var(--muted);margin:16px 0 7px}
-  .field{width:100%;border:1.5px solid var(--line);border-radius:14px;padding:13px 14px;font-size:16px;background:#fbfdfe;outline:none}
-  .field:focus{border-color:var(--accent);background:#fff}
+  label.lb{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--muted);margin:16px 0 7px}
+  .lb-note{font-weight:500;font-size:12px}
+  .field{width:100%;border:1.5px solid var(--line);border-radius:14px;padding:13px 14px;font-size:16px;background:var(--field);outline:none}
+  .field:focus{border-color:var(--accent)}
   .chips{display:flex;gap:7px;flex-wrap:wrap}
-  .chip{padding:9px 14px;border-radius:12px;background:#f1f6f9;font-size:14px;font-weight:600;border:1.5px solid transparent}
-  .chip.on{background:var(--accent-soft);border-color:var(--accent);color:#24607c}
+  .chip{padding:9px 14px;border-radius:999px;background:var(--chip);font-size:14px;font-weight:600;border:1.5px solid transparent}
+  .chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-deep)}
   .quick{margin-top:8px}
-  .quick .chip{padding:7px 11px;font-size:13px}
+  .quick .chip{padding:7px 12px;font-size:13px}
   .hint{font-size:13px;color:var(--muted);margin-top:7px}
   .row{display:flex;gap:8px;margin-top:22px}
-  .btn{flex:1;padding:15px;border-radius:15px;font-size:16px;font-weight:700;background:#eef3f6}
-  .btn.primary{background:var(--accent);color:#fff}
+  .btn{flex:1;padding:15px;border-radius:999px;font-size:16px;font-weight:700;background:var(--chip)}
+  .btn.primary{background:var(--accent);color:var(--on-accent)}
   .btn.danger{background:var(--red-soft);color:var(--red)}
   .btn.danger.armed{background:var(--red);color:#fff}
   .btn:disabled{opacity:.5}
 
-  .card{background:#f5f9fb;border-radius:16px;padding:14px;margin-top:10px}
+  .card{background:var(--chip);border-radius:18px;padding:14px;margin-top:6px}
   .card p{margin:0;font-size:14px;line-height:1.55}
-  .status{display:flex;align-items:center;gap:7px;font-weight:700;font-size:15px}
+  .card .field{background:var(--card)}
+  .pstatus{display:flex;align-items:center;gap:7px;font-weight:700;font-size:15px}
   .small-btns{display:flex;gap:8px;margin-top:12px}
   .small-btns .btn{padding:11px;font-size:14px}
+  .small-btns .btn:not(.primary){background:var(--card)}
   details{margin-top:14px}
   summary{font-size:14px;font-weight:700;color:var(--accent);cursor:pointer;padding:4px 0}
+
+  .opt-title{font-size:13px;font-weight:700;margin-bottom:8px}
+  .swatches{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .sw{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 0;border-radius:14px;background:var(--card);
+    font-size:12px;font-weight:700;color:var(--muted);border:2px solid transparent}
+  .sw i{width:28px;height:28px;border-radius:50%}
+  .sw.on{border-color:var(--accent);color:var(--ink)}
+  .seg{display:flex;gap:4px;background:var(--card);padding:4px;border-radius:999px}
+  .seg button{flex:1;padding:9px 0;border-radius:999px;font-size:14px;font-weight:700;color:var(--muted)}
+  .seg button.on{background:var(--accent);color:var(--on-accent)}
+
+  /* 위치 태그 */
+  .spot-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+  .spot-group:last-child{margin-bottom:0}
+  .spot-group > span{font-size:12px;font-weight:700;color:var(--muted);width:44px;flex:none}
+  .spot-group .chip{padding:7px 12px;font-size:13px}
+  .pin{width:13px;height:13px;stroke:currentColor;vertical-align:-1px;margin-right:3px}
+  .loc{font-weight:600}
+  .imp-row2{display:flex;gap:6px;margin-top:6px}
+  .imp-row2 select{flex:1;min-width:0;padding:9px 8px}
+  .imp-row2 select:first-child{flex:none;width:76px}
+
+  /* 영수증 가져오기 · 카드형 */
+  .imp-sum{display:block;width:100%;text-align:left;padding:2px 0}
+  .imp-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .imp-top b{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .imp-meta{display:flex;align-items:center;gap:4px;font-size:13px;color:var(--muted);margin-top:4px}
+  .imp-edit-ic{margin-left:auto;font-size:12px;font-weight:700;color:var(--accent)}
+  .imp-src{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+  .imp-edit{display:none;margin-top:10px}
+  .imp.open .imp-edit{display:grid;gap:6px}
+  .imp.open .imp-edit .imp-row2{margin-top:0}
+  .b-need{background:var(--chip);color:var(--red)}
 
   /* 영수증 가져오기 */
   .imp{display:flex;gap:10px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)}
   .imp:last-child{border-bottom:0}
   .imp.off{opacity:.45}
-  .ck{width:26px;height:26px;border-radius:8px;border:2px solid #b9c8d2;flex:none;margin-top:9px;display:grid;place-items:center;font-size:15px;color:#fff}
+  .ck{width:26px;height:26px;border-radius:8px;border:2px solid var(--line);flex:none;margin-top:9px;display:grid;place-items:center;font-size:15px;color:var(--on-accent)}
   .imp:not(.off) .ck{background:var(--accent);border-color:var(--accent)}
-  .imp .emo{width:40px;height:40px;font-size:21px;border-radius:12px;margin-top:2px}
+  .imp .emo{width:40px;height:40px;margin-top:2px}
+  .imp .ic-line{width:21px;height:21px}
   .imp-body{flex:1;min-width:0}
   .imp-body .field{padding:9px 11px;font-size:15px;border-radius:11px}
   .imp-row{display:flex;gap:6px;margin-top:6px}
@@ -120,38 +221,60 @@
   .imp-hint.need{color:var(--red);font-weight:700}
   .field.need{border-color:var(--red)}
 
-  .toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translate(-50%,20px);
-    background:#1d2b36;color:#fff;padding:11px 18px;border-radius:14px;font-size:14px;z-index:40;
+  .toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translate(-50%,20px);
+    background:#2b2427;color:#fff;padding:11px 18px;border-radius:999px;font-size:14px;z-index:40;
     opacity:0;pointer-events:none;transition:.2s;max-width:88vw;text-align:center}
+  html[data-color="dark"] .toast{background:#f3f3f5;color:#111}
   .toast.on{opacity:1;transform:translate(-50%,0)}
 </style>
 </head>
 <body>
 
-<header>
+<header class="appbar">
   <div class="top">
-    <div>
+    <div class="brand">
       <h1>우리집 냉장고</h1>
       <div class="sync"><span class="dot" id="syncDot"></span><span id="syncText">이 기기에만 저장 중</span></div>
     </div>
-    <button class="icon-btn" id="btnSettings" aria-label="설정">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
-    </button>
-  </div>
-  <div class="summary">
-    <div class="sum red"><b id="cExpired">0</b><span>지났어요</span></div>
-    <div class="sum orange"><b id="cSoon">0</b><span>이틀 이내</span></div>
-    <div class="sum"><b id="cAll">0</b><span>전체</span></div>
-  </div>
-  <div class="tabs" id="tabs">
-    <button class="tab on" data-f="all">전체</button>
-    <button class="tab" data-f="냉장">냉장</button>
-    <button class="tab" data-f="냉동">냉동</button>
-    <button class="tab" data-f="실온">실온</button>
+    <div class="actions">
+      <a class="icon-btn receipt-btn" id="btnReceipt" href="https://claude.ai/artifact/BktUJNaNqsRTX5UJtjUuzP" target="_blank" rel="noopener" aria-label="영수증으로 추가"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>영수증</a>
+      <button class="icon-btn" id="btnSettings" aria-label="설정">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </button>
+    </div>
   </div>
 </header>
 
-<main id="list"></main>
+<section class="hero">
+  <div class="greet">
+    <div class="greet-1" id="greet1">좋은 하루예요,</div>
+    <div class="greet-2">냉장고를 확인해 볼까요?</div>
+    <div class="greet-sub" id="heroKicker"></div>
+  </div>
+  <div class="today">
+    <div class="today-label">오늘의 냉장고</div>
+    <div class="today-head" id="heroHead"></div>
+    <div class="today-names" id="alertText"></div>
+    <div class="summary">
+      <div class="sum"><b id="cExpired">0</b><span>기한 지남</span></div>
+      <div class="sum"><b id="cSoon">0</b><span>이틀 이내</span></div>
+      <div class="sum"><b id="cAll">0</b><span>전체</span></div>
+    </div>
+    <button class="today-btn" id="alertBar" hidden>빨리 먹을 것 보기 <span>→</span></button>
+  </div>
+</section>
+
+<div class="content">
+  <div class="tabbar">
+    <div class="tabs" id="tabs">
+      <button class="tab on" data-f="all">전체</button>
+      <button class="tab" data-f="냉장">냉장</button>
+      <button class="tab" data-f="냉동">냉동</button>
+      <button class="tab" data-f="실온">실온</button>
+    </div>
+  </div>
+  <main id="list"></main>
+</div>
 
 <button class="fab" id="btnAdd">
   <svg viewBox="0 0 24 24" fill="none" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -168,9 +291,13 @@
   <input class="field" id="fName" placeholder="예: 우유, 두부, 돼지고기" autocomplete="off">
   <label class="lb">보관</label>
   <div class="chips" id="fStorage">
-    <button class="chip on" data-v="냉장">🧊 냉장</button>
-    <button class="chip" data-v="냉동">❄️ 냉동</button>
-    <button class="chip" data-v="실온">🏠 실온</button>
+    <button class="chip on" data-v="냉장">냉장</button>
+    <button class="chip" data-v="냉동">냉동</button>
+    <button class="chip" data-v="실온">실온</button>
+  </div>
+  <div id="fSpotWrap">
+    <label class="lb">위치 <span class="lb-note">선택</span></label>
+    <select class="field" id="fSpot"></select>
   </div>
   <label class="lb" for="fDate">유통기한</label>
   <input class="field" id="fDate" type="date">
@@ -195,9 +322,24 @@
   <div class="grab"></div>
   <h2>설정</h2>
 
+  <label class="lb">화면 꾸미기 <span class="lb-note">이 폰에만 적용돼요</span></label>
+  <div class="card">
+    <div class="opt-title">색상</div>
+    <div class="swatches" id="colorPick">
+      <button class="sw" data-c="pink"><i style="background:#f0628f"></i>핑크</button>
+      <button class="sw" data-c="blue"><i style="background:#3b7cf5"></i>블루</button>
+      <button class="sw" data-c="green"><i style="background:#1fb35d"></i>그린</button>
+    </div>
+    <div class="opt-title" style="margin-top:14px">목록 모양</div>
+    <div class="seg" id="layoutPick">
+      <button data-l="list">한 줄 목록</button>
+      <button data-l="grid">2칸 카드</button>
+    </div>
+  </div>
+
   <label class="lb">푸시 알림</label>
   <div class="card">
-    <div class="status"><span class="dot" id="pushDot"></span><span id="pushText">꺼짐</span></div>
+    <div class="pstatus"><span class="dot" id="pushDot"></span><span id="pushText">꺼짐</span></div>
     <p class="hint" style="margin-top:6px">매일 아침 8시에 유통기한이 <b>이틀 남은</b> 식재료를 알려 드려요.</p>
     <div class="small-btns">
       <button class="btn primary" id="btnPush">알림 켜기</button>
@@ -213,6 +355,16 @@
       <button class="btn primary" id="btnConnect">저장하고 연결</button>
       <button class="btn" id="btnRefresh">새로고침</button>
     </div>
+  </div>
+
+  <label class="lb">가족 폰 · 영수증 페이지 연결</label>
+  <div class="card">
+    <p>아래 <b>연결 링크</b>를 복사해서<br>
+    ① 가족에게 보내면, 가족 폰에서 열기만 해도 같은 냉장고에 연결돼요.<br>
+    ② 영수증 페이지 맨 아래 칸에 붙여넣으면, 영수증 목록이 바로 이 냉장고로 들어와요.</p>
+    <input class="field" id="linkBox" readonly style="margin-top:10px;font-size:13px" placeholder="서버 연결을 먼저 해 주세요">
+    <div class="small-btns"><button class="btn primary" id="btnCopyLink">연결 링크 복사</button></div>
+    <p class="hint" style="margin-top:8px">⚠️ 이 링크가 있으면 누구나 우리 냉장고 목록을 볼 수 있어요. 가족에게만 보내 주세요.</p>
   </div>
 
   <details>
@@ -251,6 +403,21 @@
     get(k, d){ try{ const v = localStorage.getItem('fridge.'+k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
     set(k, v){ try{ localStorage.setItem('fridge.'+k, JSON.stringify(v)); }catch(e){} }
   };
+  // ---------- 화면 꾸미기 (색상 · 목록 모양, 이 폰에만 저장) ----------
+  const QP = new URLSearchParams(location.search);
+  const THEME_BG = { pink:'#fdf1f4', blue:'#f1f5fd', green:'#f0f8f3' };
+  function applyLook(){
+    let c = QP.get('color') || store.get('color', 'pink'); if (!THEME_BG[c]) c = 'pink';
+    const l = (QP.get('layout') || store.get('layout', 'list')) === 'grid' ? 'grid' : 'list';
+    document.documentElement.dataset.color = c;
+    document.documentElement.dataset.layout = l;
+    const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = THEME_BG[c];
+    const rb = document.getElementById('btnReceipt'); if (rb) rb.href = 'https://claude.ai/artifact/BktUJNaNqsRTX5UJtjUuzP#' + c;
+    document.querySelectorAll('#colorPick .sw').forEach(b => b.classList.toggle('on', b.dataset.c === c));
+    document.querySelectorAll('#layoutPick button').forEach(b => b.classList.toggle('on', b.dataset.l === l));
+  }
+  applyLook();
+
   let items = store.get('items', []);
   let queue = store.get('queue', []);
   let settings = store.get('settings', { url:'', key:'' });
@@ -275,7 +442,8 @@
     return `${y}/${z} (${WD[d.getDay()]})`;
   }
   function badge(n){
-    if (n < 0)  return ['b-red', `${-n}일 지남`];
+    const warn = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.1"/></svg>';
+    if (n < 0)  return ['b-red', `${warn}${-n}일 지남`];
     if (n === 0) return ['b-red', '오늘까지'];
     if (n <= 2) return ['b-orange', `D-${n}`];
     if (n <= 6) return ['b-yellow', `D-${n}`];
@@ -306,6 +474,41 @@
     [/아이스크림/,'🍨'],[/주스/,'🧃'],[/맥주/,'🍺'],[/와인/,'🍷'],[/콜라|사이다|음료/,'🥤'],
     [/소스|케첩|마요|잼|된장|고추장|간장/,'🫙'],[/반찬/,'🍱'],[/어묵/,'🍢']
   ];
+  // ---------- 아이콘 방식: emoji / letter(첫 글자) / line(종류별 선 아이콘) ----------
+  const ICON = new URLSearchParams(location.search).get('icon') || 'line';
+  const CATS = [
+    ['meat',  /돼지|삼겹|목살|소고기|한우|갈비|고기|불고기|차돌|닭|치킨|햄|소시지|베이컨|스팸|오리/],
+    ['fish',  /생선|연어|고등어|갈치|참치|조기|명태|새우|오징어|문어|낙지|쭈꾸미|조개|굴|홍합|바지락|어묵|멸치|미역/],
+    ['dairy', /우유|요거트|요구르트|치즈|버터|계란|달걀|메추리|생크림|라떼/],
+    ['fruit', /사과|바나나|딸기|포도|샤인|귤|오렌지|한라봉|레몬|수박|복숭아|키위|블루베리|베리|아보카도|망고|참외|자두|^배$|^감$/],
+    ['sauce', /소스|케첩|마요|잼|된장|고추장|간장|쌈장|드레싱|식초|참기름|들기름|올리브|꿀|시럽|반찬|젓갈/],
+    ['veg',   /배추|상추|양배추|시금치|깻잎|채소|야채|샐러드|대파|쪽파|부추|당근|양파|마늘|감자|고구마|버섯|브로콜리|오이|가지|고추|호박|콩나물|숙주|두부|김치|옥수수|토마토|^파$|^무$/],
+    ['drink', /주스|맥주|와인|콜라|사이다|음료|탄산|커피|소주|막걸리|^물$/],
+    ['grain', /빵|식빵|베이글|떡|밥|햇반|쌀|면|국수|라면|우동|파스타|만두|케이크|과자|시리얼/]
+  ];
+  const LINE = {
+    meat:  '<path d="M15 3.5a5.5 5.5 0 0 1 5.5 5.5c0 4-4.2 6.8-8 6.3l-3.3 3.3"/><path d="M15 3.5A5.5 5.5 0 0 0 9.5 9c0 .9.2 1.7.5 2.4L6.7 14.7"/><circle cx="5.2" cy="19.6" r="1.7"/><circle cx="4.4" cy="16.4" r="1.7"/><path d="M6.7 14.7l2.5 4.3"/>',
+    fish:  '<path d="M3 12c3-4.8 9.5-6 14-2l4-3v10l-4-3c-4.5 4-11 2.8-14-2z"/><circle cx="8.5" cy="11" r=".9"/>',
+    dairy: '<path d="M8 3h8v3l2 3v12H6V9l2-3z"/><path d="M6 9h12"/><path d="M10 14h4"/>',
+    fruit: '<path d="M12 8c-3-2.2-8-1.2-8 4.5C4 17 7.5 21 9.8 21c1 0 1.4-.5 2.2-.5s1.2.5 2.2.5C16.5 21 20 17 20 12.5 20 6.8 15 5.8 12 8z"/><path d="M12 8c0-2 .8-3.5 3-4.5"/>',
+    veg:   '<path d="M5 19C5 11 10.5 5 19 5c0 8.5-6 14-14 14z"/><path d="M5 19l8.5-8.5"/>',
+    drink: '<path d="M7 4h10l-1.5 16.5h-7z"/><path d="M7.6 9h8.8"/>',
+    sauce: '<rect x="6.5" y="8" width="11" height="13" rx="2.5"/><path d="M8 4h8v4H8z"/><path d="M9.5 13h5"/>',
+    grain: '<path d="M6 11.5A3.8 3.8 0 0 1 7.5 4h9A3.8 3.8 0 0 1 18 11.5V20H6z"/><path d="M10 9v2M14 9v2"/>',
+    etc:   '<path d="M4 8l8-4 8 4v8l-8 4-8-4z"/><path d="M4 8l8 4 8-4M12 12v8"/>'
+  };
+  function catOf(name){ for (const [k, re] of CATS) if (re.test(name)) return k; return 'etc'; }
+  function iconOf(it){
+    if (ICON === 'letter'){
+      const ch = String(it.name).trim().charAt(0) || '?';
+      return `<span class="ic-letter">${esc(ch)}</span>`;
+    }
+    if (ICON === 'line'){
+      return `<svg class="ic-line" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${LINE[catOf(it.name)]}</svg>`;
+    }
+    return emojiOf(it);
+  }
+
   function emojiOf(it){
     for (const [re, e] of EMOJI) if (re.test(it.name)) return e;
     return it.storage === '냉동' ? '❄️' : it.storage === '실온' ? '🥫' : '🥡';
@@ -318,7 +521,10 @@
     const all = items.slice().sort((a,b) => a.expiry.localeCompare(b.expiry) || a.name.localeCompare(b.name));
     $('cAll').textContent = all.length;
     $('cExpired').textContent = all.filter(i => daysLeft(i.expiry) < 0).length;
-    $('cSoon').textContent = all.filter(i => { const n = daysLeft(i.expiry); return n >= 0 && n <= 2; }).length;
+    const soonList = all.filter(i => { const n = daysLeft(i.expiry); return n >= 0 && n <= 2; });
+    const exCount = all.filter(i => daysLeft(i.expiry) < 0).length;
+    $('cSoon').textContent = soonList.length;
+    renderHero(all, soonList, exCount);
 
     const shown = filter === 'all' ? all : all.filter(i => i.storage === filter);
     const list = $('list');
@@ -328,22 +534,22 @@
       return;
     }
     const groups = [
-      ['지났어요', n => n < 0],
-      ['이틀 이내', n => n >= 0 && n <= 2],
-      ['일주일 이내', n => n >= 3 && n <= 6],
-      ['여유 있어요', n => n >= 7]
+      ['기한 지남', n => n < 0, 'ex'],
+      ['이틀 이내', n => n >= 0 && n <= 2, 'soon'],
+      ['일주일 이내', n => n >= 3 && n <= 6, 'week'],
+      ['여유 있어요', n => n >= 7, 'ok']
     ];
     let html = '';
-    for (const [title, test] of groups){
+    for (const [title, test, key] of groups){
       const g = shown.filter(i => test(daysLeft(i.expiry)));
       if (!g.length) continue;
-      html += `<div class="group">${title} <i>${g.length}</i></div>`;
+      html += `<div class="group" data-k="${key}" id="g-${key}">${title} <i>${g.length}</i></div>`;
       for (const it of g){
         const n = daysLeft(it.expiry);
         const [cls, txt] = badge(n);
-        const sub = [it.storage, it.memo].filter(Boolean).map(esc).join(' · ');
-        html += `<button class="item${n<0?' expired':''}" data-id="${esc(it.id)}">
-          <div class="emo">${emojiOf(it)}</div>
+        const sub = (it.spot ? `${PIN}<span class="loc">${esc(it.spot)}</span>` : esc(it.storage)) + (it.memo ? ' · ' + esc(it.memo) : '');
+        html += `<button class="item${n<0?' expired':''}" data-id="${esc(it.id)}" data-s="${esc(it.storage)}">
+          <div class="emo" data-s="${esc(it.storage)}">${iconOf(it)}</div>
           <div class="info"><div class="name">${esc(it.name)}</div><div class="sub">${sub}</div></div>
           <div class="right"><span class="badge ${cls}">${txt}</span><div class="date">${prettyDate(it.expiry)}</div></div>
         </button>`;
@@ -351,6 +557,36 @@
     }
     list.innerHTML = html;
   }
+
+  // 상단 인사말 · 알림 바 · 이번 주 달력
+  function renderHero(all, soonList, exCount){
+    const d = new Date();
+    $('heroKicker').textContent = `${d.getMonth()+1}월 ${d.getDate()}일 ${WD[d.getDay()]}요일`;
+    const h = d.getHours();
+    $('greet1').textContent = h < 11 ? '좋은 아침이에요,' : h < 17 ? '좋은 오후예요,' : '좋은 저녁이에요,';
+    let head;
+    const urgentN = exCount + soonList.length;
+    if (urgentN) head = `빨리 먹어야 할 게 <em>${urgentN}개</em> 있어요`;
+    else if (all.length) head = `모두 여유 있어요 <em>아주 건강해요</em>`;
+    else head = `냉장고가 <em>텅 비었어요</em>`;
+    $('heroHead').innerHTML = head;
+
+    const urgent = all.filter(i => daysLeft(i.expiry) <= 2);
+    $('alertBar').hidden = !urgent.length;
+    $('alertText').textContent = urgent.length
+      ? urgent.slice(0, 3).map(i => i.name).join(' · ') + (urgent.length > 3 ? ` 외 ${urgent.length - 3}개` : '')
+      : '';
+
+  }
+  $('alertBar').addEventListener('click', () => {
+    if (filter !== 'all'){
+      filter = 'all';
+      document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.f === 'all'));
+      render();
+    }
+    const g = $('g-ex') || $('g-soon');
+    if (g) g.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 
   $('tabs').addEventListener('click', e => {
     const t = e.target.closest('.tab'); if (!t) return;
@@ -367,7 +603,35 @@
   function closeSheets(){ $('dim').classList.remove('on'); document.querySelectorAll('.sheet').forEach(s => s.classList.remove('on')); }
   $('dim').addEventListener('click', closeSheets);
 
-  function setStorage(v){ document.querySelectorAll('#fStorage .chip').forEach(c => c.classList.toggle('on', c.dataset.v === v)); }
+  // ---------- 위치 태그 ----------
+  const SPOTS = {
+    '냉장': [['냉장고', ['1칸','2칸','3칸','4칸','서랍1','서랍2','문짝'], '냉장 '], ['김치냉장고', ['냉장','서랍1','서랍2'], '김냉 ']],
+    '냉동': [['냉동실', ['1칸','2칸','3칸','4칸','서랍1','서랍2','문짝'], '냉동 '], ['김치냉장고', ['냉동'], '김냉 ']],
+    '실온': []
+  };
+  const spotList = (st) => (SPOTS[st] || []).flatMap(([, arr, pre]) => arr.map(x => pre + x));
+  let curSpot = '';
+  const PIN = '<svg class="pin" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>';
+  function spotOptions(st, sel){
+    return `<option value="">위치 선택 안 함</option>` + (SPOTS[st] || []).map(([title, arr, pre]) =>
+      `<optgroup label="${title}">${arr.map(x => { const v = pre + x; return `<option value="${v}"${v === sel ? ' selected' : ''}>${v}</option>`; }).join('')}</optgroup>`).join('');
+  }
+  function renderSpots(){
+    const st = getStorage();
+    if (!spotList(st).includes(curSpot)) curSpot = '';
+    $('fSpotWrap').hidden = !SPOTS[st].length;
+    $('fSpot').innerHTML = spotOptions(st, curSpot);
+  }
+  $('fSpot').addEventListener('change', () => { curSpot = $('fSpot').value; });
+
+  // 식재료별 위치 기억 (우유 → 냉장 문짝)
+  let spotMem = store.get('spotMem', {});
+  function rememberSpot(name, storage, spot){
+    if (!spot) return;
+    spotMem[keyName(name)] = { s: storage, p: spot }; store.set('spotMem', spotMem);
+  }
+
+  function setStorage(v){ document.querySelectorAll('#fStorage .chip').forEach(c => c.classList.toggle('on', c.dataset.v === v)); if ($('fSpot')) renderSpots(); }
   function getStorage(){ return document.querySelector('#fStorage .chip.on')?.dataset.v || '냉장'; }
   $('fStorage').addEventListener('click', e => { const c = e.target.closest('.chip'); if (c) setStorage(c.dataset.v); });
 
@@ -393,6 +657,7 @@
     $('fName').value = it ? it.name : '';
     $('fDate').value = it ? it.expiry : '';
     $('fMemo').value = it ? (it.memo || '') : '';
+    curSpot = it ? (it.spot || '') : '';
     setStorage(it ? it.storage : (filter !== 'all' ? filter : '냉장'));
     updateDateHint();
     const del = $('btnDelete');
@@ -404,6 +669,8 @@
 
   // 이름을 쓰면 지난번 보관 기간으로 유통기한 자동 채우기
   $('fName').addEventListener('change', () => {
+    const m = spotMem[keyName($('fName').value)];
+    if (m && !curSpot && !editingId){ curSpot = m.p; setStorage(m.s); }
     const p = periods[keyName($('fName').value)];
     if (p && !$('fDate').value){
       $('fDate').value = addDays(p); updateDateHint();
@@ -415,17 +682,42 @@
   let impRows = [];
   const newId = () => 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
 
-  function readImport(){
-    const m = location.hash.match(/^#import=([A-Za-z0-9_-]+)/);
-    if (!m) return;
+  const b64e = (obj) => {
+    const bytes = new TextEncoder().encode(JSON.stringify(obj));
+    let bin = ''; bytes.forEach(b => bin += String.fromCharCode(b));
+    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  };
+  const b64d = (s) => {
+    const b64 = s.replace(/-/g, '+').replace(/_/g, '/');
+    const bin = atob(b64 + '==='.slice((b64.length + 3) % 4));
+    return JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0))));
+  };
+
+  // 주소 뒤 #connect=...(연결 링크) / #import=...(영수증 목록) 읽기
+  function readHash(){
+    const h = location.hash.slice(1);
+    if (!h) return;
+    const p = {};
+    h.split('&').forEach(s => { const i = s.indexOf('='); if (i > 0) p[s.slice(0, i)] = s.slice(i + 1); });
+    if (!p.connect && !p.import) return;
     try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}
-    try{
-      const b64 = m[1].replace(/-/g, '+').replace(/_/g, '/');
-      const bin = atob(b64 + '==='.slice((b64.length + 3) % 4));
-      const json = new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0)));
-      const list = (JSON.parse(json).items || []).filter(x => x && x.n).slice(0, 60);
-      if (list.length) openImport(list); else toast('가져올 식재료가 없어요');
-    }catch(e){ toast('가져오기 정보를 읽지 못했어요'); }
+
+    if (p.connect){
+      try{
+        const c = b64d(p.connect);
+        if (c.u && c.k && (c.u !== settings.url || c.k !== settings.key)){
+          settings = { url: c.u, key: c.k }; store.set('settings', settings);
+          uploadLocalOnce();
+          if (!p.import) toast('우리집 냉장고에 연결했어요 🎉');
+        }
+      }catch(e){ toast('연결 링크를 읽지 못했어요'); }
+    }
+    if (p.import){
+      try{
+        const list = (b64d(p.import).items || []).filter(x => x && x.n).slice(0, 60);
+        if (list.length) openImport(list); else toast('가져올 식재료가 없어요');
+      }catch(e){ toast('가져오기 정보를 읽지 못했어요'); }
+    }
   }
 
   function openImport(list){
@@ -436,7 +728,9 @@
       let expiry = '', src = '';
       if (mem){ expiry = addDays(mem); src = `지난번처럼 ${mem}일`; }
       else if (sug > 0 && sug < 1000){ expiry = addDays(sug); src = `보통 ${sug}일 정도 (추천값)`; }
-      return { name, storage: ['냉장','냉동','실온'].includes(x.s) ? x.s : '냉장', expiry, src, on: true, need: false };
+      const sm = spotMem[keyName(name)];
+      const storage = sm ? sm.s : (['냉장','냉동','실온'].includes(x.s) ? x.s : '냉장');
+      return { name, storage, spot: sm ? sm.p : '', expiry, src, on: true, need: false, open: !expiry };
     });
     renderImport();
     openSheet('impSheet');
@@ -444,46 +738,62 @@
 
   function renderImport(){
     $('impTitle').textContent = `영수증에서 가져온 식재료 ${impRows.length}개`;
-    $('impList').innerHTML = impRows.map((r, i) => `
-      <div class="imp${r.on ? '' : ' off'}" data-i="${i}">
+    $('impList').innerHTML = impRows.map((r, i) => {
+      const n = r.expiry ? daysLeft(r.expiry) : null;
+      const [cls, txt] = r.expiry ? badge(n) : ['b-need', '날짜 필요'];
+      const meta = [r.spot ? PIN + esc(r.spot) : esc(r.storage), r.expiry ? prettyDate(r.expiry) : ''].filter(Boolean).join(' · ');
+      return `
+      <div class="imp${r.on ? '' : ' off'}${r.open ? ' open' : ''}" data-i="${i}">
         <button class="ck" data-act="toggle">${r.on ? '✓' : ''}</button>
-        <div class="emo">${emojiOf(r)}</div>
+        <div class="emo" data-s="${esc(r.storage)}">${iconOf(r)}</div>
         <div class="imp-body">
-          <input class="field" data-f="name" value="${esc(r.name)}">
-          <div class="imp-row">
-            <select class="field" data-f="storage">${['냉장','냉동','실온'].map(s => `<option${s === r.storage ? ' selected' : ''}>${s}</option>`).join('')}</select>
+          <button class="imp-sum" data-act="open">
+            <span class="imp-top"><b>${esc(r.name)}</b><span class="badge ${cls}">${txt}</span></span>
+            <span class="imp-meta">${meta}<span class="imp-edit-ic">${r.open ? '접기' : '수정'}</span></span>
+            ${r.src && !r.open ? `<span class="imp-src">${esc(r.src)}</span>` : ''}
+          </button>
+          <div class="imp-edit">
+            <input class="field" data-f="name" value="${esc(r.name)}" placeholder="이름">
+            <div class="imp-row2">
+              <select class="field" data-f="storage">${['냉장','냉동','실온'].map(s => `<option${s === r.storage ? ' selected' : ''}>${s}</option>`).join('')}</select>
+              ${spotList(r.storage).length ? `<select class="field" data-f="spot">${spotOptions(r.storage, r.spot)}</select>` : ''}
+            </div>
             <input class="field${r.need ? ' need' : ''}" type="date" data-f="expiry" value="${r.expiry}">
+            <div class="imp-hint${r.need ? ' need' : ''}">${r.need ? '유통기한을 골라 주세요' : esc(r.src || '')}</div>
           </div>
-          <div class="imp-hint${r.need ? ' need' : ''}">${r.need ? '유통기한을 골라 주세요' : esc(r.src || (r.expiry ? '' : '유통기한을 골라 주세요'))}</div>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
     const n = impRows.filter(r => r.on).length;
     $('btnImpAdd').textContent = n ? `${n}개 추가` : '추가';
     $('btnImpAdd').disabled = !n;
   }
 
   $('impList').addEventListener('click', e => {
-    const b = e.target.closest('[data-act="toggle"]'); if (!b) return;
+    const b = e.target.closest('[data-act]'); if (!b) return;
     const r = impRows[b.closest('.imp').dataset.i];
-    r.on = !r.on; renderImport();
+    if (b.dataset.act === 'toggle') r.on = !r.on;
+    else r.open = !r.open;
+    renderImport();
   });
   $('impList').addEventListener('change', e => {
     const f = e.target.dataset.f; if (!f) return;
     const r = impRows[e.target.closest('.imp').dataset.i];
     r[f] = e.target.value.trim();
+    if (f === 'storage' && !spotList(r.storage).includes(r.spot)) r.spot = '';
     if (f === 'expiry'){ r.need = !r.expiry; r.src = ''; }
-    if (f === 'name' || f === 'storage' || f === 'expiry') renderImport();
+    renderImport();
   });
   $('btnImpCancel').addEventListener('click', () => { impRows = []; closeSheets(); });
   $('btnImpAdd').addEventListener('click', () => {
     const chosen = impRows.filter(r => r.on && r.name);
     let missing = 0;
-    chosen.forEach(r => { r.need = !r.expiry; if (r.need) missing++; });
+    chosen.forEach(r => { r.need = !r.expiry; if (r.need){ missing++; r.open = true; } });
     if (missing){ renderImport(); return toast(`유통기한이 빠진 항목이 ${missing}개 있어요`); }
     const now = new Date().toISOString();
     chosen.forEach(r => {
-      const it = { id: newId(), name: r.name, expiry: r.expiry, storage: r.storage, memo: '', updated: now };
-      items.push(it); rememberPeriod(r.name, r.expiry);
+      const it = { id: newId(), name: r.name, expiry: r.expiry, storage: r.storage, spot: spotList(r.storage).includes(r.spot) ? r.spot : '', memo: '', updated: now };
+      items.push(it); rememberPeriod(r.name, r.expiry); rememberSpot(r.name, it.storage, it.spot);
       queue = queue.filter(q => (q.item ? q.item.id : q.id) !== it.id);
       queue.push({ action:'upsert', item: it });
     });
@@ -491,7 +801,7 @@
     flush(); render(); closeSheets(); impRows = [];
     toast(`${chosen.length}개를 냉장고에 넣었어요`);
   });
-  window.addEventListener('hashchange', readImport);
+  window.addEventListener('hashchange', () => { readHash(); sync(true); });
 
   $('btnSave').addEventListener('click', () => {
     const name = $('fName').value.trim();
@@ -501,12 +811,13 @@
     const old = editingId ? items.find(i => i.id === editingId) : null;
     const it = {
       id: old ? old.id : 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2,6),
-      name, expiry, storage: getStorage(), memo: $('fMemo').value.trim(),
+      name, expiry, storage: getStorage(), spot: spotList(getStorage()).includes(curSpot) ? curSpot : '', memo: $('fMemo').value.trim(),
       updated: new Date().toISOString()
     };
     items = old ? items.map(i => i.id === it.id ? it : i) : items.concat(it);
     store.set('items', items);
     rememberPeriod(name, expiry);
+    rememberSpot(name, it.storage, it.spot);
     enqueue({ action:'upsert', item: it });
     render(); closeSheets();
     toast(old ? '수정했어요' : `${name} 추가했어요`);
@@ -531,6 +842,7 @@
   function setSync(state, text){
     $('syncDot').className = 'dot ' + (state || '');
     $('syncText').textContent = text;
+    $('syncText').parentElement.classList.toggle('show', state === 'err');
   }
   const connected = () => !!(settings.url && settings.key);
 
@@ -582,6 +894,7 @@
       setSync('busy', '불러오는 중…');
       const data = await api('list');
       items = data.items; store.set('items', items);
+      store.set('everSynced', true);
       setSync('ok', '구글 시트와 동기화됨');
       render();
       if (!silent) toast('최신 목록을 불러왔어요');
@@ -594,25 +907,51 @@
   // ---------- 설정 ----------
   $('btnSettings').addEventListener('click', () => {
     $('sUrl').value = settings.url; $('sKey').value = settings.key;
+    $('linkBox').value = connectLink();
     updatePushUI(); openSheet('setSheet');
   });
   $('btnCloseSet').addEventListener('click', closeSheets);
+  $('colorPick').addEventListener('click', e => {
+    const b = e.target.closest('.sw'); if (!b) return;
+    store.set('color', b.dataset.c); QP.delete('color'); applyLook();
+  });
+  $('layoutPick').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    store.set('layout', b.dataset.l); QP.delete('layout'); applyLook(); render();
+  });
   $('btnConnect').addEventListener('click', async () => {
     settings = { url: $('sUrl').value.trim(), key: $('sKey').value.trim() };
     store.set('settings', settings);
     if (!connected()) return toast('URL과 키를 모두 입력해 주세요');
-    // 처음 연결이면 이 기기에 있던 목록을 서버로 올림
-    if (!store.get('everSynced', false)){
-      items.forEach(it => { if (!queue.some(q => q.item && q.item.id === it.id)) queue.push({ action:'upsert', item: it }); });
-      store.set('queue', queue);
-    }
+    uploadLocalOnce();
     await sync(false);
-    if ($('syncDot').classList.contains('ok')){
-      store.set('everSynced', true);
-      if (window.Notification && Notification.permission === 'granted') registerPush(true);
-    }
+    $('linkBox').value = connectLink();
+    if ($('syncDot').classList.contains('ok') && window.Notification && Notification.permission === 'granted') registerPush(true);
   });
   $('btnRefresh').addEventListener('click', () => sync(false));
+
+  // 처음 연결할 때, 이 기기에만 있던 목록을 서버로 올림
+  function uploadLocalOnce(){
+    if (store.get('everSynced', false)) return;
+    items.forEach(it => { if (!queue.some(q => q.item && q.item.id === it.id)) queue.push({ action:'upsert', item: it }); });
+    store.set('queue', queue);
+  }
+
+  // 연결 링크 (가족 폰 / 영수증 페이지용)
+  function connectLink(){
+    return connected() ? location.origin + location.pathname + '#connect=' + b64e({ u: settings.url, k: settings.key }) : '';
+  }
+  $('btnCopyLink').addEventListener('click', async () => {
+    const link = connectLink();
+    if (!link) return toast('서버 연결을 먼저 해 주세요');
+    $('linkBox').value = link;
+    try{ await navigator.clipboard.writeText(link); toast('연결 링크를 복사했어요'); }
+    catch(e){
+      $('linkBox').focus(); $('linkBox').select();
+      try{ document.execCommand('copy'); toast('연결 링크를 복사했어요'); }
+      catch(e2){ toast('칸을 길게 눌러 직접 복사해 주세요'); }
+    }
+  });
 
   // ---------- 푸시 알림 ----------
   const fbReady = () => typeof firebase !== 'undefined' && self.FIREBASE_CONFIG && self.FIREBASE_CONFIG.apiKey && self.VAPID_KEY;
@@ -678,8 +1017,8 @@
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { render(); sync(true); } });
 
   render();
+  readHash();
   sync(true);
-  readImport();
   if (pushSupported() && fbReady() && connected() && Notification.permission === 'granted') registerPush(true);
 })();
 </script>
